@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitor Registration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 700px;
+            margin: 20px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            height: 80vh;
+        }
+
+        .form-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .form-container {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+            color: #555;
+        }
+
+        input {
+            /* width: 100%; */
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: flex-end;
+            /* Align children to the right */
+            align-items: flex-end;
+            /* Align button at the bottom of the container */
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        button {
+            width: 30%;
+            padding: 12px;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        select {
+            height: 40px;
+        }
+
+        .checkbox-container {
+            margin-top: 10px;
+        }
+
+        .checkbox-container label {
+            display: block;
+            padding-left: 10px;
+            padding-top: 5px;
+            font-weight: normal;
+        }
+
+        .dropdown-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .dropdown-btn {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            text-align: left;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .checkbox-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 999;
+        }
+
+        .checkbox-dropdown label {
+            display: block;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        .checkbox-dropdown label:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropdown-container.selected .checkbox-dropdown {
+            display: block;
+        }
+
+        .checkbox-dropdown input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .header-image img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        /* New styles for making Name and Phone inputs appear in one row */
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .form-row div {
+            width: 48%;
+        }
+
+        /* Responsive design for smaller screens */
+        @media screen and (max-width: 768px) {
+            .form-row div {
+                width: 100%;
+            }
+        }
+
+        .countdown {
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .dropdown-container {
+            font-family: Arial, sans-serif;
+            width: 250px;
+            /* margin: 20px; */
+        }
+
+        .dropdown-container label {
+            font-size: 18px;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .dropdown-btn {
+            width: 100%;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            background-color: white;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .dropdown-btn:after {
+            content: " ▼";
+            float: right;
+        }
+
+        .checkbox-dropdown {
+            display: none;
+            border: 1px solid #ccc;
+            background: white;
+            width: 100%;
+            position: absolute;
+            z-index: 1000;
+        }
+
+        .checkbox-dropdown label {
+            display: block;
+            padding: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .checkbox-dropdown label:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdownBtn = document.getElementById('dropdownBtn');
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            const selectedValuesContainer = document.getElementById('selectedValues');
+
+            // Toggle dropdown visibility
+            dropdownBtn.addEventListener('click', function () {
+                dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+            });
+
+            // Update selected values when checkboxes are clicked
+            dropdownMenu.addEventListener('change', function (e) {
+                if (e.target.type === 'checkbox') {
+                    updateSelectedValues();
+                }
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function (e) {
+                if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownMenu.style.display = 'none';
+                }
+            });
+
+            // Function to update selected values
+            function updateSelectedValues() {
+                const selectedCheckboxes = document.querySelectorAll('#dropdownMenu input[type="checkbox"]:checked');
+                const selectedValues = Array.from(selectedCheckboxes).map(cb => cb.value).join(', ');
+                selectedValuesContainer.textContent = selectedValues || 'No areas selected';
+            }
+        });
+    </script>
+</head>
+
+<body>
+    <div class="form-container">
+        <!-- Header Image -->
+        <div class="header-image">
+            <img src="/image/gongul.png" alt="Header Image">
+        </div>
+
+
+        <!-- User Registration Form -->
+        <span>
+            <h2>SKUAST-K AgriTech Mela 2025 - Visitors Registration
+                Greetings.</h2>
+
+            Be part of the SKUAST-K Technology Exhibition cum Seed Mela at SKUAST-Kashmir on February 22-23, 2025. Share
+            your interests and explore opportunities in agriculture, startups, innovations, and more.
+
+            Fill out this short form to join our community and stay connected for future events.
+
+            Let’s shape the future together!
+        </span>
+        <form action="/register" method="POST" id="registrationForm">
+            <div class="form-row">
+                <div>
+                    <label for="name">Name:</label>
+                    <input style="width: 100%" type="text" id="name" name="name" required><br>
+                </div>
+                <div>
+                    <label for="phone">Phone:</label>
+                    <input type="text" style="width: 100%" id="phone" name="phone" required><br>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label for="adhaar">Adhaar Number:</label>
+                    <input type="text" style="width: 100%" id="adhaar" name="adhaar" required>
+                </div>
+                <div>
+                    <label for="email">Email:</label>
+                    <input type="email" style="width: 100%" id="email" name="email" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div>
+                    <label for="district">District:</label>
+                    <select name="district" style="width: 100%" id="district" required>
+                        <option value="">Select District</option>
+                        <% const districts=["Anantnag", "Bandipora" , "Baramulla" , "Budgam" , "Doda" , "Ganderbal"
+                            , "Jammu" , "Kathua" , "Kishtwar" , "Kulgam" , "Kupwara" , "Poonch" , "Pulwama" , "Rajouri"
+                            , "Ramban" , "Reasi" , "Samba" , "Shopian" , "Srinagar" , "Udhampur" ]; %>
+                            <% districts.forEach(function(district) { %>
+                                <option value="<%= district %>">
+                                    <%= district %>
+                                </option>
+                                <% }) %>
+                    </select>
+                </div>
+                <div>
+                    <label for="viewing">You are viewing as:</label>
+                    <select name="viewing" style="width: 100%" id="viewing" required>
+                        <option value="">Select viewing as</option>
+                        <% const visitors=["Farmer", "Student" , "Entrepreneur" , "Research/Academic"
+                            , "Industry professional" , "General visitor" ]; %>
+                            <% visitors.forEach(function(visitor) { %>
+                                <option value="<%= visitor %>">
+                                    <%= visitor %>
+                                </option>
+                                <% }) %>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <div class="dropdown-container" style="width: 48%">
+                    <label for="areas-of-interest">Multi select dropdown</label>
+                    <button type="button" class="dropdown-btn" id="dropdownBtn">Select</button>
+                    <div class="checkbox-dropdown" id="dropdownMenu">
+                        <label><input type="checkbox" value="India"> India</label>
+                        <label><input type="checkbox" value="US"> US</label>
+                        <label><input type="checkbox" value="China"> China</label>
+                        <label><input type="checkbox" value="France"> France</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-container">
+                <button type="submit">Register</button>
+            </div>
+
+        </form>
+    </div>
+
+</body>
+
+</html>
